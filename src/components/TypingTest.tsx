@@ -1,7 +1,41 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { CodeSnippet, getRandomSnippet, languages, difficulties } from '@/data/codeSnippets';
+
+// Mock data for the demo
+const languages = ['javascript', 'python', 'java', 'cpp', 'typescript', 'rust', 'go'];
+const difficulties = ['easy', 'medium', 'hard'];
+
+const codeSnippets = [
+  {
+    id: 1,
+    language: 'javascript',
+    difficulty: 'medium',
+    code: `const fibonacci = (n) => {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+};
+
+const result = fibonacci(10);
+console.log(result);`
+  },
+  {
+    id: 2,
+    language: 'python',
+    difficulty: 'easy',
+    code: `def greet(name):
+    return f"Hello, {name}!"
+
+print(greet("World"))`
+  }
+];
+
+const getRandomSnippet = (language?: string, difficulty?: string) => {
+  let filtered = codeSnippets;
+  if (language) filtered = filtered.filter(s => s.language === language);
+  if (difficulty) filtered = filtered.filter(s => s.difficulty === difficulty);
+  return filtered[Math.floor(Math.random() * filtered.length)] || codeSnippets[0];
+};
 
 interface TypingStats {
   wpm: number;
@@ -22,6 +56,13 @@ interface TestState {
 }
 
 export default function TypingTest() {
+  interface CodeSnippet {
+    id: number;
+    language: string;
+    difficulty: string;
+    code: string;
+  }
+
   const [snippet, setSnippet] = useState<CodeSnippet | null>(null);
   const [testState, setTestState] = useState<TestState>({
     isActive: false,
@@ -41,6 +82,7 @@ export default function TypingTest() {
   });
   const [selectedLanguage, setSelectedLanguage] = useState<string>('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('');
+  const [showOverlay, setShowOverlay] = useState<boolean>(true);
   
   const codeDisplayRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -90,19 +132,17 @@ export default function TypingTest() {
       incorrectChars: 0,
       totalChars: 0,
     });
+    setShowOverlay(true);
     
-    // Focus code display after reset
     setTimeout(() => {
       codeDisplayRef.current?.focus();
     }, 100);
   }, [selectedLanguage, selectedDifficulty]);
 
-  // Load initial snippet
   useEffect(() => {
     resetTest();
   }, [resetTest]);
 
-  // Timer effect
   useEffect(() => {
     if (testState.isActive && testState.startTime) {
       intervalRef.current = setInterval(() => {
@@ -126,8 +166,8 @@ export default function TypingTest() {
   const handleInputChange = useCallback((value: string) => {
     if (!snippet) return;
 
-    // Start test on first character
     if (!testState.isActive && value.length > 0) {
+      setShowOverlay(false);
       setTestState(prev => ({
         ...prev,
         isActive: true,
@@ -135,7 +175,6 @@ export default function TypingTest() {
       }));
     }
 
-    // Check if test is complete
     if (value.length >= snippet.code.length) {
       setTestState(prev => ({
         ...prev,
@@ -146,7 +185,6 @@ export default function TypingTest() {
       return;
     }
 
-    // Update errors
     const newErrors = new Set<number>();
     for (let i = 0; i < value.length; i++) {
       if (value[i] !== snippet.code[i]) {
@@ -162,40 +200,37 @@ export default function TypingTest() {
     }));
   }, [snippet, testState.isActive]);
 
-  // Keyboard event handler
+  const handleOverlayClick = () => {
+    setShowOverlay(false);
+    codeDisplayRef.current?.focus();
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if test is complete or we're typing in a form element
       if (testState.isComplete || 
           (e.target as HTMLElement)?.tagName?.toLowerCase() === 'select' ||
           (e.target as HTMLElement)?.tagName?.toLowerCase() === 'button') {
         return;
       }
 
-      // Prevent default behavior for most keys to avoid page navigation
       if (e.key !== 'Tab' && e.key !== 'F5' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
       }
 
       if (e.key === 'Backspace') {
-        // Handle backspace
         if (testState.userInput.length > 0) {
           const newInput = testState.userInput.slice(0, -1);
           handleInputChange(newInput);
         }
       } else if (e.key.length === 1) {
-        // Handle regular character input
         handleInputChange(testState.userInput + e.key);
       } else if (e.key === 'Enter') {
-        // Handle enter key
         handleInputChange(testState.userInput + '\n');
       }
     };
 
-    // Add event listener to document
     document.addEventListener('keydown', handleKeyDown);
 
-    // Focus the code display when component mounts
     if (codeDisplayRef.current) {
       codeDisplayRef.current.focus();
     }
@@ -212,18 +247,15 @@ export default function TypingTest() {
       let className = 'relative ';
       
       if (index < testState.userInput.length) {
-        // Character has been typed
         if (testState.errors.has(index)) {
-          className += 'bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200';
+          className += 'text-red-400 bg-red-500/10 border-b-2 border-red-500';
         } else {
-          className += 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200';
+          className += 'text-green-400';
         }
       } else if (index === testState.currentIndex && testState.isActive) {
-        // Current character cursor
-        className += 'bg-blue-500 text-white animate-pulse';
+        className += 'text-white border-b-2 border-cyan-400 bg-cyan-400/10 animate-pulse';
       } else {
-        // Untyped characters
-        className += 'text-gray-600 dark:text-gray-400';
+        className += 'text-gray-500';
       }
 
       return (
@@ -234,7 +266,7 @@ export default function TypingTest() {
               <br />
             </>
           ) : char === ' ' ? (
-            '\u00A0' // Non-breaking space for visibility
+            '\u00A0'
           ) : (
             char
           )}
@@ -244,137 +276,200 @@ export default function TypingTest() {
   };
 
   if (!snippet) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-black flex justify-center items-center">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
-          CodeType
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Test your coding typing speed and accuracy
-        </p>
-      </div>
-
-      {/* Controls */}
-      <div className="flex flex-wrap gap-4 justify-center items-center">
-        <select
-          value={selectedLanguage}
-          onChange={(e) => setSelectedLanguage(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-          disabled={testState.isActive}
-        >
-          <option value="">All Languages</option>
-          {languages.map(lang => (
-            <option key={lang} value={lang}>
-              {lang.charAt(0).toUpperCase() + lang.slice(1)}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={selectedDifficulty}
-          onChange={(e) => setSelectedDifficulty(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-          disabled={testState.isActive}
-        >
-          <option value="">All Difficulties</option>
-          {difficulties.map(diff => (
-            <option key={diff} value={diff}>
-              {diff.charAt(0).toUpperCase() + diff.slice(1)}
-            </option>
-          ))}
-        </select>
-
-        <button
-          onClick={resetTest}
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          disabled={testState.isActive}
-        >
-          New Test
-        </button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
-          <div className="text-2xl font-bold text-blue-500">{stats.wpm}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">WPM</div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
-          <div className="text-2xl font-bold text-green-500">{stats.accuracy}%</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Accuracy</div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
-          <div className="text-2xl font-bold text-purple-500">{stats.timeElapsed}s</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Time</div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
-          <div className="text-2xl font-bold text-orange-500">
-            {snippet.language}
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-6xl mx-auto px-8 py-12">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-16">
+          <div>
+            <h1 className="text-4xl font-thin tracking-wider text-white mb-2">
+              TYPECODE
+            </h1>
+            <div className="w-16 h-px bg-white/30"></div>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Language</div>
+          <div className="flex items-center space-x-8">
+            <div className="text-center">
+              <div className="text-xs text-gray-400 uppercase tracking-widest">TIME</div>
+              <div className="text-2xl font-mono font-light text-cyan-400 mt-1">{stats.timeElapsed}</div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Code Display */}
-      <div 
-        ref={codeDisplayRef}
-        tabIndex={0}
-        className="bg-gray-900 rounded-lg p-6 relative focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-text"
-        onClick={() => codeDisplayRef.current?.focus()}
-      >
-        <div className="absolute top-4 right-4 text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded">
-          {snippet.language} • {snippet.difficulty}
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-12 gap-8">
+          {/* Left Sidebar - Controls */}
+          <div className="col-span-3 space-y-6">
+            <div>
+              <label className="block text-xs text-gray-400 uppercase tracking-widest mb-3">
+                Language
+              </label>
+              <select
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+                className="w-full bg-black border border-gray-700 text-white px-4 py-3 focus:outline-none focus:border-cyan-400 transition-colors"
+                disabled={testState.isActive}
+              >
+                <option value="">All</option>
+                {languages.map(lang => (
+                  <option key={lang} value={lang}>
+                    {lang.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-400 uppercase tracking-widest mb-3">
+                Difficulty
+              </label>
+              <select
+                value={selectedDifficulty}
+                onChange={(e) => setSelectedDifficulty(e.target.value)}
+                className="w-full bg-black border border-gray-700 text-white px-4 py-3 focus:outline-none focus:border-cyan-400 transition-colors"
+                disabled={testState.isActive}
+              >
+                <option value="">All</option>
+                {difficulties.map(diff => (
+                  <option key={diff} value={diff}>
+                    {diff.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={resetTest}
+              className="w-full bg-cyan-500 text-black py-3 px-6 hover:bg-cyan-400 transition-colors focus:outline-none font-medium"
+              disabled={false}
+            >
+              NEW TEST
+            </button>
+
+            {/* Stats Sidebar */}
+            <div className="pt-8 space-y-6">
+              <div className="border-t border-gray-800 pt-6">
+                <div className="text-xs text-gray-400 uppercase tracking-widest mb-2">WPM</div>
+                <div className="text-3xl font-mono font-light text-cyan-400">{stats.wpm}</div>
+              </div>
+              
+              <div>
+                <div className="text-xs text-gray-400 uppercase tracking-widest mb-2">Accuracy</div>
+                <div className="text-3xl font-mono font-light text-green-400">{stats.accuracy}%</div>
+              </div>
+              
+              <div>
+                <div className="text-xs text-gray-400 uppercase tracking-widest mb-2">Characters</div>
+                <div className="text-xl font-mono font-light text-purple-400">{stats.correctChars}/{stats.totalChars}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Code Area */}
+          <div className="col-span-9">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="text-xs text-gray-400 uppercase tracking-widest">
+                  {snippet.language} • {snippet.difficulty}
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                <div className="text-xs text-gray-400">
+                  {testState.isActive ? 'ACTIVE' : testState.isComplete ? 'COMPLETE' : 'READY'}
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div 
+                ref={codeDisplayRef}
+                tabIndex={0}
+                className="bg-black border border-gray-700 p-8 min-h-96 focus:outline-none focus:border-cyan-400 transition-colors cursor-text"
+                onClick={() => codeDisplayRef.current?.focus()}
+              >
+                <pre className="font-mono text-base leading-loose whitespace-pre-wrap">
+                  {renderCode()}
+                </pre>
+              </div>
+
+              {/* Overlay with blur effect */}
+              {showOverlay && (
+                <div 
+                  className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-black/70"
+                  onClick={handleOverlayClick}
+                >
+                  <div className="text-center">
+                    <div className="text-3xl font-thin tracking-wider text-white mb-4">Click to Begin</div>
+                    <div className="text-sm text-gray-400">Start typing to activate the test</div>
+                    <div className="w-24 h-px bg-white/30 mx-auto mt-4"></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-        {!testState.isActive && testState.userInput.length === 0 && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 text-lg pointer-events-none">
-            Click here and start typing to begin...
+
+        {/* Results Modal */}
+        {testState.isComplete && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-black border border-white p-12 max-w-2xl w-full mx-4">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-thin tracking-wider mb-2">TEST COMPLETE</h2>
+                <div className="w-24 h-px bg-white mx-auto"></div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-8 mb-8">
+                <div className="text-center">
+                  <div className="text-xs text-gray-400 uppercase tracking-widest mb-2">WORDS/MIN</div>
+                  <div className="text-4xl font-mono font-light text-cyan-400">{stats.wpm}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-gray-400 uppercase tracking-widest mb-2">ACCURACY</div>
+                  <div className="text-4xl font-mono font-light text-green-400">{stats.accuracy}%</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-gray-400 uppercase tracking-widest mb-2">TIME</div>
+                  <div className="text-4xl font-mono font-light text-purple-400">{stats.timeElapsed}s</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-8 text-sm mb-8">
+                <div>
+                  <div className="text-xs text-gray-400 uppercase tracking-widest mb-2">PERFORMANCE</div>
+                  <div className="space-y-1">
+                    <div>Total Characters: {stats.totalChars}</div>
+                    <div>Correct: {stats.correctChars}</div>
+                    <div>Errors: {stats.incorrectChars}</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400 uppercase tracking-widest mb-2">DETAILS</div>
+                  <div className="space-y-1">
+                    <div>Language: {snippet.language.toUpperCase()}</div>
+                    <div>Difficulty: {snippet.difficulty.toUpperCase()}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <button
+                  onClick={resetTest}
+                  className="bg-cyan-500 text-black py-3 px-8 hover:bg-cyan-400 transition-colors focus:outline-none font-medium"
+                >
+                  START NEW TEST
+                </button>
+              </div>
+            </div>
           </div>
         )}
-        <pre className="font-mono text-sm leading-relaxed whitespace-pre-wrap overflow-hidden">
-          {renderCode()}
-        </pre>
-      </div>
-
-      {/* Results */}
-      {testState.isComplete && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-4">
-            Test Complete! 🎉
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-            <div>
-              <span className="font-medium">Final WPM:</span> {stats.wpm}
-            </div>
-            <div>
-              <span className="font-medium">Accuracy:</span> {stats.accuracy}%
-            </div>
-            <div>
-              <span className="font-medium">Time:</span> {stats.timeElapsed}s
-            </div>
-            <div>
-              <span className="font-medium">Correct chars:</span> {stats.correctChars}
-            </div>
-            <div>
-              <span className="font-medium">Errors:</span> {stats.incorrectChars}
-            </div>
-            <div>
-              <span className="font-medium">Total chars:</span> {stats.totalChars}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Instructions */}
-      <div className="text-center text-sm text-gray-500 dark:text-gray-400 space-y-1">
-        <p>💡 Click on the code area and start typing to begin the test</p>
-        <p>⚡ Your typing speed (WPM) and accuracy are calculated in real-time</p>
-        <p>🎯 Challenge yourself with different languages and difficulty levels</p>
       </div>
     </div>
   );
-} 
+}
