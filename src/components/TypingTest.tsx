@@ -284,7 +284,7 @@ export default function TypingTest() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white overflow-hidden">
       <div className="max-w-6xl mx-auto px-8 py-12">
         {/* Header */}
         <div className="flex items-center justify-between mb-16">
@@ -305,7 +305,7 @@ export default function TypingTest() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-12 gap-8">
           {/* Left Sidebar - Controls */}
-          <div className="col-span-3 space-y-6">
+          <div className="col-span-3 space-y-6 mt-[-10px]">
             <div>
               <label className="block text-xs text-gray-400 uppercase tracking-widest mb-3">
                 Language
