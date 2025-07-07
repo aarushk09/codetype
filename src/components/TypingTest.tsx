@@ -7,8 +7,19 @@ const languages = ['javascript', 'python', 'java', 'cpp', 'typescript', 'rust', 
 const difficulties = ['easy', 'medium', 'hard'];
 
 const codeSnippets = [
+  // JavaScript snippets
   {
     id: 1,
+    language: 'javascript',
+    difficulty: 'easy',
+    code: `function greet(name) {
+  return "Hello, " + name + "!";
+}
+
+console.log(greet("World"));`
+  },
+  {
+    id: 2,
     language: 'javascript',
     difficulty: 'medium',
     code: `const fibonacci = (n) => {
@@ -20,21 +31,458 @@ const result = fibonacci(10);
 console.log(result);`
   },
   {
-    id: 2,
+    id: 3,
+    language: 'javascript',
+    difficulty: 'hard',
+    code: `class EventEmitter {
+  constructor() {
+    this.events = {};
+  }
+  
+  on(event, callback) {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(callback);
+  }
+  
+  emit(event, data) {
+    if (this.events[event]) {
+      this.events[event].forEach(callback => callback(data));
+    }
+  }
+}
+
+const emitter = new EventEmitter();
+emitter.on('test', (data) => console.log(data));
+emitter.emit('test', 'Hello Events!');`
+  },
+  
+  // Python snippets
+  {
+    id: 4,
     language: 'python',
     difficulty: 'easy',
     code: `def greet(name):
     return f"Hello, {name}!"
 
 print(greet("World"))`
+  },
+  {
+    id: 5,
+    language: 'python',
+    difficulty: 'medium',
+    code: `class Calculator:
+    def __init__(self):
+        self.history = []
+    
+    def add(self, a, b):
+        result = a + b
+        self.history.append(f"{a} + {b} = {result}")
+        return result
+    
+    def get_history(self):
+        return self.history
+
+calc = Calculator()
+print(calc.add(5, 3))`
+  },
+  {
+    id: 6,
+    language: 'python',
+    difficulty: 'hard',
+    code: `def quick_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    
+    return quick_sort(left) + middle + quick_sort(right)
+
+numbers = [3, 6, 8, 10, 1, 2, 1]
+sorted_numbers = quick_sort(numbers)
+print(f"Sorted: {sorted_numbers}")`
+  },
+  
+  // Java snippets
+  {
+    id: 7,
+    language: 'java',
+    difficulty: 'easy',
+    code: `public class Hello {
+    public static void main(String[] args) {
+        String message = "Hello, Java!";
+        System.out.println(message);
+    }
+}`
+  },
+  {
+    id: 8,
+    language: 'java',
+    difficulty: 'medium',
+    code: `public class ArraySum {
+    public static void main(String[] args) {
+        int[] numbers = {1, 2, 3, 4, 5};
+        int sum = 0;
+        
+        for (int num : numbers) {
+            sum += num;
+        }
+        
+        System.out.println("Sum: " + sum);
+    }
+}`
+  },
+  {
+    id: 9,
+    language: 'java',
+    difficulty: 'hard',
+    code: `import java.util.*;
+
+public class QuickSort {
+    public static void quickSort(int[] arr, int low, int high) {
+        if (low < high) {
+            int pi = partition(arr, low, high);
+            quickSort(arr, low, pi - 1);
+            quickSort(arr, pi + 1, high);
+        }
+    }
+    
+    public static int partition(int[] arr, int low, int high) {
+        int pivot = arr[high];
+        int i = (low - 1);
+        
+        for (int j = low; j < high; j++) {
+            if (arr[j] <= pivot) {
+                i++;
+                int temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+        }
+        
+        int temp = arr[i + 1];
+        arr[i + 1] = arr[high];
+        arr[high] = temp;
+        
+        return i + 1;
+    }
+}`
+  },
+  
+  // C++ snippets
+  {
+    id: 10,
+    language: 'cpp',
+    difficulty: 'easy',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    string message = "Hello, C++!";
+    cout << message << endl;
+    return 0;
+}`
+  },
+  {
+    id: 11,
+    language: 'cpp',
+    difficulty: 'medium',
+    code: `#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> nums = {1, 2, 3, 4, 5};
+    int sum = 0;
+    
+    for (const auto& num : nums) {
+        sum += num;
+    }
+    
+    std::cout << "Sum: " << sum << std::endl;
+    return 0;
+}`
+  },
+  {
+    id: 12,
+    language: 'cpp',
+    difficulty: 'hard',
+    code: `#include <iostream>
+#include <vector>
+#include <algorithm>
+
+class QuickSort {
+public:
+    static void sort(std::vector<int>& arr, int low, int high) {
+        if (low < high) {
+            int pi = partition(arr, low, high);
+            sort(arr, low, pi - 1);
+            sort(arr, pi + 1, high);
+        }
+    }
+    
+private:
+    static int partition(std::vector<int>& arr, int low, int high) {
+        int pivot = arr[high];
+        int i = low - 1;
+        
+        for (int j = low; j < high; j++) {
+            if (arr[j] <= pivot) {
+                i++;
+                std::swap(arr[i], arr[j]);
+            }
+        }
+        std::swap(arr[i + 1], arr[high]);
+        return i + 1;
+    }
+};`
+  },
+  
+  // TypeScript snippets
+  {
+    id: 13,
+    language: 'typescript',
+    difficulty: 'easy',
+    code: `function greet(name: string): string {
+  return \`Hello, \${name}!\`;
+}
+
+console.log(greet("TypeScript"));`
+  },
+  {
+    id: 14,
+    language: 'typescript',
+    difficulty: 'medium',
+    code: `interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+function createUser(name: string, email: string): User {
+  return {
+    id: Math.floor(Math.random() * 1000),
+    name,
+    email
+  };
+}
+
+const user = createUser("John Doe", "john@example.com");
+console.log(user);`
+  },
+  {
+    id: 15,
+    language: 'typescript',
+    difficulty: 'hard',
+    code: `abstract class Shape {
+  abstract area(): number;
+  abstract perimeter(): number;
+}
+
+class Rectangle extends Shape {
+  constructor(private width: number, private height: number) {
+    super();
+  }
+  
+  area(): number {
+    return this.width * this.height;
+  }
+  
+  perimeter(): number {
+    return 2 * (this.width + this.height);
+  }
+}
+
+class Circle extends Shape {
+  constructor(private radius: number) {
+    super();
+  }
+  
+  area(): number {
+    return Math.PI * this.radius * this.radius;
+  }
+  
+  perimeter(): number {
+    return 2 * Math.PI * this.radius;
+  }
+}
+
+const rect = new Rectangle(5, 3);
+console.log(\`Rectangle area: \${rect.area()}\`);`
+  },
+  
+  // Rust snippets
+  {
+    id: 16,
+    language: 'rust',
+    difficulty: 'easy',
+    code: `fn main() {
+    let message = "Hello, Rust!";
+    println!("{}", message);
+}`
+  },
+  {
+    id: 17,
+    language: 'rust',
+    difficulty: 'medium',
+    code: `fn main() {
+    let numbers = vec![1, 2, 3, 4, 5];
+    
+    let doubled: Vec<i32> = numbers
+        .iter()
+        .map(|x| x * 2)
+        .collect();
+    
+    println!("Original: {:?}", numbers);
+    println!("Doubled: {:?}", doubled);
+}`
+  },
+  {
+    id: 18,
+    language: 'rust',
+    difficulty: 'hard',
+    code: `use std::collections::HashMap;
+
+#[derive(Debug)]
+struct Person {
+    name: String,
+    age: u32,
+}
+
+impl Person {
+    fn new(name: String, age: u32) -> Self {
+        Person { name, age }
+    }
+    
+    fn greet(&self) -> String {
+        format!("Hello, I'm {} and I'm {} years old", self.name, self.age)
+    }
+}
+
+fn main() {
+    let mut people: HashMap<u32, Person> = HashMap::new();
+    
+    people.insert(1, Person::new("Alice".to_string(), 30));
+    people.insert(2, Person::new("Bob".to_string(), 25));
+    
+    for (id, person) in &people {
+        println!("ID {}: {}", id, person.greet());
+    }
+}`
+  },
+  
+  // Go snippets
+  {
+    id: 19,
+    language: 'go',
+    difficulty: 'easy',
+    code: `package main
+
+import "fmt"
+
+func main() {
+    message := "Hello, Go!"
+    fmt.Println(message)
+}`
+  },
+  {
+    id: 20,
+    language: 'go',
+    difficulty: 'medium',
+    code: `package main
+
+import "fmt"
+
+func main() {
+    numbers := []int{1, 2, 3, 4, 5}
+    sum := 0
+    
+    for _, num := range numbers {
+        sum += num
+    }
+    
+    fmt.Printf("Sum: %d\n", sum)
+}`
+  },
+  {
+    id: 21,
+    language: 'go',
+    difficulty: 'hard',
+    code: `package main
+
+import (
+    "fmt"
+    "sync"
+)
+
+type Counter struct {
+    mu    sync.Mutex
+    value int
+}
+
+func (c *Counter) Increment() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.value++
+}
+
+func (c *Counter) Value() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    return c.value
+}
+
+func main() {
+    counter := &Counter{}
+    var wg sync.WaitGroup
+    
+    for i := 0; i < 1000; i++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            counter.Increment()
+        }()
+    }
+    
+    wg.Wait()
+    fmt.Printf("Final count: %d\n", counter.Value())
+}`
   }
 ];
 
 const getRandomSnippet = (language?: string, difficulty?: string) => {
-  let filtered = codeSnippets;
-  if (language) filtered = filtered.filter(s => s.language === language);
-  if (difficulty) filtered = filtered.filter(s => s.difficulty === difficulty);
-  return filtered[Math.floor(Math.random() * filtered.length)] || codeSnippets[0];
+  // First try to filter by both language and difficulty
+  if (language && difficulty) {
+    const exactMatch = codeSnippets.filter(s => 
+      s.language.toLowerCase() === language.toLowerCase() && 
+      s.difficulty.toLowerCase() === difficulty.toLowerCase()
+    );
+    if (exactMatch.length > 0) {
+      return exactMatch[Math.floor(Math.random() * exactMatch.length)];
+    }
+  }
+  
+  // If no exact match, try filtering by language only
+  if (language) {
+    const languageMatch = codeSnippets.filter(s => s.language.toLowerCase() === language.toLowerCase());
+    if (languageMatch.length > 0) {
+      return languageMatch[Math.floor(Math.random() * languageMatch.length)];
+    }
+  }
+  
+  // If no language match, try filtering by difficulty only
+  if (difficulty) {
+    const difficultyMatch = codeSnippets.filter(s => s.difficulty.toLowerCase() === difficulty.toLowerCase());
+    if (difficultyMatch.length > 0) {
+      return difficultyMatch[Math.floor(Math.random() * difficultyMatch.length)];
+    }
+  }
+  
+  // Final fallback: return any random snippet
+  return codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
 };
 
 interface TypingStats {
@@ -133,7 +581,7 @@ export default function TypingTest() {
       totalChars: 0,
     });
     setShowOverlay(true);
-    
+
     setTimeout(() => {
       codeDisplayRef.current?.focus();
     }, 100);
