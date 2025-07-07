@@ -213,7 +213,7 @@ export default function TypingTest() {
         return;
       }
 
-      if (e.key !== 'Tab' && e.key !== 'F5' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
       }
 
@@ -222,10 +222,12 @@ export default function TypingTest() {
           const newInput = testState.userInput.slice(0, -1);
           handleInputChange(newInput);
         }
-      } else if (e.key.length === 1) {
-        handleInputChange(testState.userInput + e.key);
+      } else if (e.key === 'Tab') {
+        handleInputChange(testState.userInput + '  ');
       } else if (e.key === 'Enter') {
         handleInputChange(testState.userInput + '\n');
+      } else if (e.key.length === 1) {
+        handleInputChange(testState.userInput + e.key);
       }
     };
 
